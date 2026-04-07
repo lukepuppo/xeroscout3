@@ -63,6 +63,7 @@ increment_patch_version() {
 update_version_files() {
     local current_version="$1"
     local next_version="$2"
+    local source_dir="$3"
 
     CURRENT_VERSION="$current_version" NEXT_VERSION="$next_version" node -e "
 const fs = require('fs');
@@ -102,6 +103,21 @@ if (match[1] !== current) {
 fs.writeFileSync(path, text.replace(versionLine, \`#define MyAppVersion \"\${next}\"\`));
 " "$INSTALLER_ISS"
 
+    SOURCE_DIR="$source_dir" node -e "
+const fs = require('fs');
+const path = process.argv[1];
+const sourceDir = process.env.SOURCE_DIR;
+const sourceLine = /^#define MyAppSourceDir \"([^\"]*)\"$/m;
+const text = fs.readFileSync(path, 'utf8');
+
+if (!sourceLine.test(text)) {
+  console.error(\`Could not find MyAppSourceDir in \${path}\`);
+  process.exit(1);
+}
+
+fs.writeFileSync(path, text.replace(sourceLine, \`#define MyAppSourceDir \"\${sourceDir.replace(/\\\\/g, '\\\\\\\\')}\"\`));
+" "$INSTALLER_ISS"
+
     grep -q "\"version\": \"$next_version\"" "$PACKAGE_JSON" || fail "Failed to update $PACKAGE_JSON to $next_version"
     grep -q "^#define MyAppVersion \"$next_version\"$" "$INSTALLER_ISS" || fail "Failed to update $INSTALLER_ISS to $next_version"
 }
@@ -114,7 +130,8 @@ done
 labelstep 'Incrementing the build version'
 current_version="$(read_current_version)"
 next_version="$(increment_patch_version "$current_version")"
-update_version_files "$current_version" "$next_version"
+windows_script_dir="$(cygpath -w "$SCRIPT_DIR")"
+update_version_files "$current_version" "$next_version" "$windows_script_dir"
 echo "Version updated: $current_version -> $next_version"
 
 labelstep 'Compiling the application'

@@ -7,6 +7,7 @@ import * as crypto from "crypto";
 import settings from "electron-settings";
 import { ImageManager } from "../imagemgr";
 import { IPCAppInit, IPCAppType, IPCImageResponse, IPCSetView } from "../../shared/ipc";
+import { appUpdater } from "../updater";
 
 export interface XeroVersion {
 	major: number;
@@ -190,6 +191,10 @@ export abstract class SCBase {
 			message: msg,
 		};
 		dialog.showMessageBoxSync(this.win_, options);
+	}
+
+	protected checkForUpdates() {
+		appUpdater.checkForUpdates() ;
 	}
 
 	public setSetting(name: string, value: any) {

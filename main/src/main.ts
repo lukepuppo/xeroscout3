@@ -4,6 +4,7 @@ import { SCBase } from "./main/apps/scbase";
 import { SCScout } from "./main/apps/scscout";
 import { SCCentral } from "./main/apps/sccentral";
 import { SCCoach } from "./main/apps/sccoach";
+import { appUpdater } from "./main/updater";
 import { getNavData as getNavData, executeCommand, getInfoData, getSelectEventData, loadBaEventData, getTabletData, 
          setTabletData, getTeamData, setTeamData, getMatchData, setMatchData, getTeamStatus, getMatchStatus, setTabletNamePurpose, 
          provideResult, setEventName, getMatchDB, getTeamDB, sendMatchColConfig, sendTeamColConfig, generateRandomData,
@@ -182,6 +183,7 @@ function createWindow() : void {
       }) ;
 
     Menu.setApplicationMenu(scappbase!.createMenu()) ;
+    appUpdater.initialize(win, scappbase!.logger_) ;
 
     win.on('ready-to-show', () => {
         // win.webContents.openDevTools() ;
@@ -281,6 +283,9 @@ app.on("ready", () => {
 
     ipcMain.on('prompt-string-request', (event, ...args) => { promptStringRequest('prompt-string-request', ...args)}) ;
     ipcMain.on('prompt-string-response', (event, ...args) => { promptStringResponse('prompt-string-response', ...args)}) ;
+    ipcMain.on('updater:check', () => { appUpdater.checkForUpdates() ; }) ;
+    ipcMain.on('updater:install', () => { appUpdater.quitAndInstall() ; }) ;
+    ipcMain.on('updater:get-status', (event) => { event.sender.send('updater-status', [appUpdater.getStatus()]) ; }) ;
 
     createWindow() ;
 }) ;

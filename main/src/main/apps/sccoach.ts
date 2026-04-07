@@ -380,6 +380,25 @@ export class SCCoach extends SCCoachCentralBaseApp {
         resetmenu.submenu?.insert(0, resetitem) ;
         ret.append(resetmenu);          
 
+        let helpmenu: MenuItem = new MenuItem({
+            type: 'submenu',
+            label: 'Help',
+            submenu: new Menu(),
+        }) ;
+
+        helpmenu.submenu?.append(new MenuItem({
+            type: 'normal',
+            label: 'Check For Updates',
+            click: () => { this.checkForUpdates() ; }
+        })) ;
+
+        helpmenu.submenu?.append(new MenuItem({
+            type: 'normal',
+            label: 'About',
+            click: () => { this.showAbout() ; }
+        })) ;
+        ret.append(helpmenu) ;
+
         return ret ;
     }    
 

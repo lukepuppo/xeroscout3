@@ -1553,6 +1553,12 @@ export class SCScout extends SCBase {
             submenu: new Menu(),
         }) ;
 
+        helpmenu.submenu?.append(new MenuItem({
+            type: 'normal',
+            label: 'Check For Updates',
+            click: () => { this.checkForUpdates() ; }
+        })) ;
+
         let aboutitem: MenuItem = new MenuItem( {
             type: 'normal',
             label: 'About',

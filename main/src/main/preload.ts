@@ -90,6 +90,9 @@ contextBridge.exposeInMainWorld( 'scoutingAPI', {
         'prompt-string-request',          // views/autoanalysis/autoanalysisview.ts
         'prompt-string-response',         // apps/xeroapp.ts
         'get-match-predictor-data',       // views/matchpred/matchsim.ts
+        'updater:check',                  // app update actions
+        'updater:install',                // app update actions
+        'updater:get-status',             // app update actions
 	      ];
       if (validChannels.includes(channel)) {
         if (data) {
@@ -172,6 +175,7 @@ contextBridge.exposeInMainWorld( 'scoutingAPI', {
         'prompt-string-request',        // main/apps/sccentral.ts
         'prompt-string-response',       // main/ipchandlers.ts
         'send-match-predictor-data',    // main/apps/sccoachcentralbase.ts
+        'updater-status',               // app updater
       ];
       if (validChannels.includes(channel)) {
         let wrappers = receiveWrapperMap.get(channel) ;
@@ -188,5 +192,39 @@ contextBridge.exposeInMainWorld( 'scoutingAPI', {
         wrappers.set(func, wrapper) ;
         ipcRenderer.on(channel, wrapper);
       }
+  }
+}) ;
+
+contextBridge.exposeInMainWorld('updaterAPI', {
+  checkForUpdates: () => ipcRenderer.send('updater:check'),
+  installUpdate: () => ipcRenderer.send('updater:install'),
+  requestStatus: () => ipcRenderer.send('updater:get-status'),
+  onStatus: (func: any) => {
+    const channel = 'updater-status';
+    let wrappers = receiveWrapperMap.get(channel) ;
+    if (!wrappers) {
+      wrappers = new Map() ;
+      receiveWrapperMap.set(channel, wrappers) ;
+    }
+
+    if (wrappers.has(func)) {
+      return ;
+    }
+
+    const wrapper = (_event: Electron.IpcRendererEvent, ...args: any[]) => func(args[0][0]) ;
+    wrappers.set(func, wrapper) ;
+    ipcRenderer.on(channel, wrapper) ;
+  },
+  offStatus: (func: any) => {
+    const channel = 'updater-status';
+    const wrappers = receiveWrapperMap.get(channel) ;
+    const wrapper = wrappers?.get(func) ;
+    if (wrapper) {
+      ipcRenderer.off(channel, wrapper) ;
+      wrappers!.delete(func) ;
+      if (wrappers!.size === 0) {
+        receiveWrapperMap.delete(channel) ;
+      }
+    }
   }
 }) ;

@@ -1,0 +1,40 @@
+name: Windows Development Build
+
+on:
+  push:
+    branches:
+      - develop
+      - github-actions
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    runs-on: [self-hosted, windows, docker]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install renderer dependencies
+        working-directory: renderer
+        run: npm ci
+
+      - name: Install main dependencies
+        working-directory: main
+        run: npm ci
+
+      - name: Run build
+        shell: bash
+        working-directory: main
+        run: ./build_luke.sh
+
+      - name: Upload installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            main/installer/*.exe
+            main/out/make/squirrel.windows/x64/*.exe

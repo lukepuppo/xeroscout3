@@ -585,6 +585,16 @@ export class SCCentral extends SCCoachCentralBaseApp {
 		});
 		helpmenu.submenu!.append(helpitem);
 
+		let updateitem: MenuItem = new MenuItem({
+			type: 'normal',
+			label: 'Check For Updates',
+			id: 'help-check-updates',
+			click: () => {
+				this.checkForUpdates();
+			},
+		});
+		helpmenu.submenu!.append(updateitem);
+
 		let aboutitem: MenuItem = new MenuItem({
 			type: 'normal',
 			label: 'About',
