@@ -1,5 +1,8 @@
 name: Windows Development Build
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -14,6 +17,9 @@ concurrency:
 jobs:
   build-windows:
     runs-on: [self-hosted, windows, docker]
+    env:
+      RELEASE_TAG: dev-build-${{ github.run_number }}
+      RELEASE_NAME: Development Build #${{ github.run_number }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,3 +44,19 @@ jobs:
           path: |
             main/installer/*.exe
             main/out/make/squirrel.windows/x64/*.exe
+            main/out/make/squirrel.windows/x64/*.nupkg
+            main/out/make/squirrel.windows/x64/RELEASES
+
+      - name: Publish GitHub prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            main/installer/*.exe
+            main/out/make/squirrel.windows/x64/*.exe
+            main/out/make/squirrel.windows/x64/*.nupkg
+            main/out/make/squirrel.windows/x64/RELEASES
